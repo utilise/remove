@@ -50,4 +50,17 @@ describe('remove', function() {
     expect(remove('foo')(5)).to.be.eql(5)
   })
 
+  it('should work deeply', function() {
+    var changes = []
+      , o = versioned({ a: { b: { c: 5 }}}).on('log', function(diff){ changes.push(diff) })
+
+    remove('a.b.c')(o)
+    expect(o.log.length).to.eql(2)
+    expect(last(o.log).diff).to.eql({ key: 'a.b.c', value: 5, type: 'remove' })
+    expect(last(o.log).value.toJS()).to.eql({ a: { b: {}}})
+    expect(changes).to.eql([
+      { key: 'a.b.c', value: 5, type: 'remove' }
+    ])
+  })
+
 })

@@ -19,6 +19,7 @@
     "versioned": "*"
   },
   "dependencies": {
-    "utilise.set": "*"
+    "utilise.set": "*",
+    "utilise.key": "*"
   }
 }
