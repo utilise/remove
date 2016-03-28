@@ -1,7 +1,7 @@
-var versioned = require('versioned').default
-  , expect = require('chai').expect
+var expect = require('chai').expect
   , remove = require('./')
   , last = require('utilise.last')
+  , set = require('utilise.set')
 
 describe('remove', function() {
 
@@ -10,39 +10,21 @@ describe('remove', function() {
   })
 
   it('should remove - array', function(){
-    var changes = []
-      , o = versioned(['foo', 'bar', 'baz']).on('log', function(diff){ changes.push(diff) })
+    var o = set()(['foo', 'bar', 'baz'])
 
-    expect(o).to.eql(['foo', 'bar', 'baz'])
-    expect(o.log.length).to.eql(1) 
-    expect(last(o.log).diff).to.eql(undefined)
-    expect(last(o.log).value.toJS()).to.eql(['foo', 'bar', 'baz'])
-    expect(changes).to.eql([])
-
-    expect(remove(1)(o)).to.eql(o)
+    expect(remove(1)(o)).to.equal(o)
     expect(o).to.eql(['foo', 'baz'])
     expect(o.log.length).to.eql(2)
-    expect(last(o.log).diff).to.eql({ key: '1', value: 'bar', type: 'remove' })
-    expect(last(o.log).value.toJS()).to.eql(['foo', 'baz'])
-    expect(changes).to.eql(o.log.slice(1).map(d => d.diff))
+    expect(last(o.log)).to.eql({ key: '1', value: 'bar', type: 'remove', time: 1 })
   })
     
   it('should remove - object', function(){
-    var changes = []
-      , o = versioned({ foo: 'bar' }).on('log', function(diff){ changes.push(diff) })
+    var o = set()({ foo: 'bar' })
 
-    expect(o).to.eql({ foo: 'bar' })
-    expect(o.log.length).to.eql(1)
-    expect(last(o.log).diff).to.eql(undefined)
-    expect(last(o.log).value.toJS()).to.eql({ foo: 'bar' })
-    expect(changes).to.eql([])
-
-    expect(remove('foo')(o)).to.eql(o)
+    expect(remove('foo')(o)).to.equal(o)
     expect(o).to.eql({})
     expect(o.log.length).to.eql(2)
-    expect(last(o.log).diff).to.eql({ key: 'foo', value: 'bar', type: 'remove' })
-    expect(last(o.log).value.toJS()).to.eql({})
-    expect(changes).to.eql(o.log.slice(1).map(d => d.diff))
+    expect(last(o.log)).to.eql({ key: 'foo', value: 'bar', type: 'remove', time: 1 })
   })  
 
   it('should skip gracefully', function(){
@@ -51,16 +33,12 @@ describe('remove', function() {
   })
 
   it('should work deeply', function() {
-    var changes = []
-      , o = versioned({ a: { b: { c: 5 }}}).on('log', function(diff){ changes.push(diff) })
+    var o = set()({ a: { b: { c: 5 }}})
 
     remove('a.b.c')(o)
+    expect(o).to.eql({ a: { b: {}}})
     expect(o.log.length).to.eql(2)
-    expect(last(o.log).diff).to.eql({ key: 'a.b.c', value: 5, type: 'remove' })
-    expect(last(o.log).value.toJS()).to.eql({ a: { b: {}}})
-    expect(changes).to.eql([
-      { key: 'a.b.c', value: 5, type: 'remove' }
-    ])
+    expect(last(o.log)).to.eql({ key: 'a.b.c', value: 5, type: 'remove', time: 1 })
   })
 
 })
